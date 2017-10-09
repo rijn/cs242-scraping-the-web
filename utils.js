@@ -11,6 +11,14 @@ export const isFilm = ($) => $('table.infobox.vevent > tbody')
 
 export const completeWikiDomain = link => 'https://en.wikipedia.org' + link;
 
+export const linkExtractor = $ => {
+    var links = [];
+    $('#bodyContent a').each((i, link) => {
+        links.push($(link).attr('href'));
+    });
+    return links;
+}
+
 export const informationExtractor = ($) => {
     var result = {
         name: $('table.infobox').first().find('tr').first()

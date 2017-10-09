@@ -5,10 +5,12 @@ import _ from 'lodash';
 
 class Resource extends EventEmitter {
     constructor ({
-            uri
+        uri,
+        from
     } = {}) {
         super();
         this.uri = uri;
+        this.from = from;
     }
 
     request () {
@@ -27,6 +29,7 @@ export default class Scraper extends EventEmitter {
     constructor ({
         concurrency = 5,
         analyzer = null,
+        resolver = null,
         keyFn = ({ uri }) => uri
     } = {}) {
         super();
@@ -41,6 +44,7 @@ export default class Scraper extends EventEmitter {
 
         this.keyFn = keyFn;
         this.analyzer = analyzer;
+        this.resolver = resolver;
     }
 
     start () {
@@ -53,9 +57,11 @@ export default class Scraper extends EventEmitter {
         }
         _.forEach(tasks, task => {
             if (!this.history.hasOwnProperty(this.keyFn(task))) {
-                this.history[this.keyFn(task)] = true;
+                this.history[this.keyFn(task)] = false;
                 this.queue.push(new Resource(task));
                 this.next();
+            } else {
+                this.analyze(null, task);
             }
         });
     }
@@ -70,18 +76,32 @@ export default class Scraper extends EventEmitter {
             })(this, task));
             task.request();
         }
+
+        if (this.queue.length + this.working === 0) {
+            this.emit('empty');
+        }
     }
 
     resolve ($, task) {
         this.working--;
 
-        // console.log(task.uri + ' resolved');
-
-        if (_.isFunction(this.analyzer)) {
-            this.analyzer.call(this, { $, task });
-        }
+        this.analyze($, task);
 
         this.next();
+    }
+
+    analyze ($, task) {
+        if (!this.history[this.keyFn(task)] && _.isFunction(this.analyzer)) {
+            this.history[this.keyFn(task)] = this.analyzer.call(this, { $, task });
+        }
+
+        if (this.history[this.keyFn(task)] && _.isFunction(this.resolver)) {
+            this.resolver.call(this, this.history[this.keyFn(task)]);
+        }
+    }
+
+    searchHistory (tasks) {
+        return _.chain(tasks).map(this.keyFn).map(key => this.history[key]).value();
     }
 }
 
