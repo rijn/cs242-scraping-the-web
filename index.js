@@ -1,3 +1,44 @@
+const electron = require('electron');
+const ipc = electron.ipcMain;
+const app = electron.app;
+const dialog = electron.dialog
+const BrowserWindow = electron.BrowserWindow;
+
+const path = require('path');
+const url = require('url');
+
+import fs from 'fs';
+
+let mainWindow;
+
+function createWindow () {
+  mainWindow = new BrowserWindow({width: 700, height: 800})
+
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
+
+  mainWindow.on('closed', function () {
+    mainWindow = null
+  })
+}
+
+app.on('ready', createWindow)
+
+app.on('window-all-closed', function () {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+app.on('activate', function () {
+  if (mainWindow === null) {
+    createWindow()
+  }
+})
+
 import Scraper from './scraper';
 import Graph from './graph';
 import _ from 'lodash';
@@ -13,11 +54,8 @@ import { runQueries } from './query';
 
 let graph = new Graph();
 
-var old_time = new Date();
-var count = 0;
-
 let scraper = new Scraper({
-    concurrency: 7,
+    concurrency: 10,
     analyzer: function ({ $, task }) {
         if (!$) return;
         if (!isActor($) && !isFilm($)) return;
@@ -47,13 +85,9 @@ let scraper = new Scraper({
             .map(uri => ({ uri, from: info.name }))
             .value();
 
+        this.push(dependencies);
 
-        if (count < 200) this.push(dependencies.slice(1,10));
-
-        count ++;
-        var new_time = new Date();
-        var seconds_passed = new_time - old_time;
-        console.log((seconds_passed / 1000).toFixed(2), count);
+        mainWindow.webContents.send('scraper-statistic', scraper.count());
 
         return { info, dependencies, from: task.from };
     },
@@ -75,11 +109,56 @@ let scraper = new Scraper({
             graph.setNode(info.name, info);
         }
 
-        // console.log('# node = ' + graph.count().node + ', # edge = ' + graph.count().edge);
+        mainWindow.webContents.send('graph-statistic', graph.count());
     }
 });
+
 scraper.push({ uri: 'https://en.wikipedia.org/wiki/Morgan_Freeman' });
-scraper.start();
+// scraper.start();
 scraper.on('empty', () => {
     console.log(runQueries(graph));
 });
+
+ipc.on('start-scraper', function () { scraper.enable(); });
+ipc.on('stop-scraper', function () { scraper.disable(); });
+
+ipc.on('query-all', function (event) {
+    let results = runQueries(graph);
+    event.returnValue = results;
+});
+
+ipc.on('open-dialog', function (event) {
+    dialog.showOpenDialog({
+        properties: ['openFile'],
+        multiSelections: false
+    }, function (files) {
+        if (files) {
+            try {
+                let d = fs.readFileSync(files[0]);
+                let o = JSON.parse(d);
+                scraper.restore(o.scraper);
+                graph.restore(o.graph);
+                mainWindow.webContents.send('scraper-statistic', scraper.count());
+                mainWindow.webContents.send('graph-statistic', graph.count());
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    });
+});
+
+ipc.on('save-dialog', function (event) {
+    const options = {
+        title: 'Save',
+        filters: [
+            { name: 'JSON', extensions: ['json'] }
+        ]
+    }
+    dialog.showSaveDialog(options, function (filename) {
+        if (!filename) return;
+        fs.writeFileSync(filename, JSON.stringify({
+            scraper: scraper.data(),
+            graph: graph.data()
+        }));
+    })
+})

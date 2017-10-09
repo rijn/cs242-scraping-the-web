@@ -45,10 +45,36 @@ export default class Scraper extends EventEmitter {
         this.keyFn = keyFn;
         this.analyzer = analyzer;
         this.resolver = resolver;
+
+        this.enabled = false;
     }
 
-    start () {
+    data () {
+        return {
+            history: this.history,
+            queue: this.queue
+        };
+    }
+
+    restore (obj) {
+        this.history = obj.history;
+        this.queue = obj.queue.map(t => new Resource(t));
+    }
+
+    enable () {
+        this.enabled = true;
         this.next();
+    }
+
+    disable () {
+        this.enabled = false;
+    }
+
+    count () {
+        return {
+            working: this.working,
+            queue: this.queue.length
+        };
     }
 
     push (tasks) {
@@ -59,7 +85,6 @@ export default class Scraper extends EventEmitter {
             if (!this.history.hasOwnProperty(this.keyFn(task))) {
                 this.history[this.keyFn(task)] = false;
                 this.queue.push(new Resource(task));
-                this.next();
             } else {
                 this.analyze(null, task);
             }
@@ -67,6 +92,8 @@ export default class Scraper extends EventEmitter {
     }
 
     next () {
+        if (!this.enabled) return;
+
         while (this.working < this.options.concurrency && this.queue.length > 0) {
             this.working++;
 

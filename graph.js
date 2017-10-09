@@ -111,4 +111,20 @@ export default class Graph {
     connectedNode (key) {
         return _.keys(this._connectivity[key]);
     }
+
+    data () {
+        return {
+            _node: this._node,
+            _edge: this._edge,
+            _connectivity: this._connectivity,
+            _count: this._count
+        };
+    }
+
+    restore (obj) {
+        this._node = obj._node;
+        this._edge = obj._edge;
+        this._connectivity = obj._connectivity;
+        this._count = obj._count;
+    }
 }
