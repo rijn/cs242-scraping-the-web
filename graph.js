@@ -49,7 +49,15 @@ export default class Graph {
     }
 
     nodes () {
-        return _.keys(this._nodes);
+        return _.keys(this._node);
+    }
+
+    values () {
+        return _.values(this._node);
+    }
+
+    value (key) {
+        return this._node[key];
     }
 
     edgeId (v, w) {
@@ -101,6 +109,6 @@ export default class Graph {
     }
 
     connectedNode (key) {
-        return _.keys(this._connectivity[key]).map(key => this._node[key]);
+        return _.keys(this._connectivity[key]);
     }
 }
