@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "nyc --reporter=text mocha -r babel-register",
     "electron": "electron -r babel-register ."
   },
   "repository": {
@@ -20,9 +20,12 @@
   "homepage": "https://github.com/rijn/cs242-scraping-the-web#readme",
   "dependencies": {
     "babel-register": "^6.26.0",
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
     "cheerio": "^1.0.0-rc.2",
     "electron": "^1.7.8",
     "lodash": "^4.17.4",
+    "mocha": "^4.0.1",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "semantic-ui": "^2.2.13"
