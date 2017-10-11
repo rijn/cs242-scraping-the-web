@@ -88,8 +88,9 @@ describe('Graph', () => {
             });
         });
 
-        describe('remove', () => {
+        it('remove', () => {
             // TODO
+            graph.removeNode();
         });
 
         describe('has', () => {
@@ -203,7 +204,9 @@ describe('Graph', () => {
             });
         });
 
-        describe('remove', () => {
+        it('remove', () => {
+            // TODO
+            graph.removeEdge();
         });
     });
 
