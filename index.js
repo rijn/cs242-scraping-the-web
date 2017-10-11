@@ -16,6 +16,7 @@ import fs from 'fs';
 
 let mainWindow;
 
+// Create main window of election
 let createWindow = () => {
     mainWindow = new BrowserWindow({width: 700, height: 800});
   
@@ -32,14 +33,17 @@ let createWindow = () => {
     });
 }
 
+// create window when prerequsite finished
 app.on('ready', createWindow);
 
+// Terminate thread when window closed
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
 });
 
+// Create window when app be activated
 app.on('activate', () => {
     if (mainWindow === null) {
         createWindow();
@@ -51,7 +55,7 @@ import Graph from './graph';
 import _ from 'lodash';
 import {
     isActor, isFilm,
-    notInnerLink, isWikiDomain, isNotFunctionalPage,
+    isNotInnerLink, isWikiDomain, isNotFunctionalPage,
     completeWikiDomain,
     linkExtractor, informationExtractor,
     grossingValueParser, ageParser, releaseYearParser,
@@ -59,49 +63,60 @@ import {
 } from './utils';
 import { runQueries } from './query';
 
+// Initialize graph
 log.info('initialize graph');
 let graph = new Graph();
 
+// Initialize scraper
 log.info('initialize scraper');
 let scraper = new Scraper({
+    // Set concurrentcy to 10
     concurrency: 10,
+    // Customized analyzer
     analyzer: function ({ $, task }) {
+        // If cheerio is not ready, exit
         if (!$) return;
+        // If current resource is neither actor nor film, exit
         if (!isActor($) && !isFilm($)) return;
 
+        // Extrace information from infobox
         let info = informationExtractor($);
 
+        // Set indicator
         if (isActor($)) info.isActor = true;
         if (isFilm($)) info.isFilm = true;
 
+        // If it is a film, extract grossing value and released year
         if (info.isFilm) {
             info.grossingValue = grossingValueParser(info);
             info.releaseYear = releaseYearParser(info);
         }
 
+        // If he is an actor, extract his age
         if (info.isActor) {
             info.age = ageParser(info);
         }
 
+        // Extract all links from main and push into queue
         let dependencies = _
             .chain(linkExtractor($))
             .compact()
-            .filter(notInnerLink)
+            .filter(isNotInnerLink)
             .filter(isWikiDomain)
             .filter(isNotFunctionalPage)
             .map(completeWikiDomain)
             .uniq()
             .map(uri => ({ uri, from: info.name }))
             .value();
-
         log.debug('%d dependencies founded', dependencies.length);
-
         this.push(dependencies);
 
+        // Update statistic
         mainWindow.webContents.send('scraper-statistic', scraper.count());
 
         return { info, dependencies, from: task.from };
     },
+    // Customized resolver
     resolver: function ({ info = null, dependencies = [], from = null } = {}) {
         let addRelation = function (task) {
             if (!task || !task.info) return;
@@ -110,29 +125,34 @@ let scraper = new Scraper({
             }
         };
 
+        // Set node of current item
         graph.setNode(info.name, info);
 
+        // Add relation between current one and original one
         addRelation(graph.value(from));
+
+        // Add relation between current one and all its dependencies
         _.chain(this.searchHistory(dependencies)).compact().each(addRelation).value();
 
+        // If he is an actor, update his grossing value
         if (info.isActor) {
             info.grossingValue = sumGrossingValue(graph, info.name);
             graph.setNode(info.name, info);
         }
 
+        // Update statistic
         mainWindow.webContents.send('graph-statistic', graph.count());
     }
 });
 
+// Push initial page
 scraper.push({ uri: 'https://en.wikipedia.org/wiki/Morgan_Freeman' });
-// scraper.start();
-scraper.on('empty', () => {
-    console.log(runQueries(graph));
-});
 
+// Turn on or off the scraper
 ipc.on('start-scraper', function () { scraper.enable(); });
 ipc.on('stop-scraper', function () { scraper.disable(); });
 
+// Run the queries
 ipc.on('query-all', function (event) {
     var results = null;
     try {
@@ -145,6 +165,7 @@ ipc.on('query-all', function (event) {
     event.returnValue = results;
 });
 
+// Load json file
 ipc.on('open-dialog', function (event) {
     dialog.showOpenDialog({
         properties: ['openFile'],
@@ -166,6 +187,7 @@ ipc.on('open-dialog', function (event) {
     });
 });
 
+// Save json file
 ipc.on('save-dialog', function (event) {
     const options = {
         title: 'Save',
@@ -187,6 +209,7 @@ ipc.on('save-dialog', function (event) {
     });
 });
 
+// Log agent for window thread
 ipc.on('log', (event, { level = 'log', message = null } = {}) => {
     log[level](message);
 });

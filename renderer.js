@@ -1,6 +1,7 @@
 const ipc = require('electron').ipcRenderer;
 const _ = require('lodash');
 
+// Log agent, so they may have same syntax
 let log = (function () {
     let levels = ['log', 'trace', 'debug', 'info', 'warn', 'error'];
 
@@ -15,6 +16,7 @@ let log = (function () {
     return new Log();
 })();
 
+// Timer
 let timer = (function () {
     var Timer = function () {
         this._t = null;
@@ -40,21 +42,13 @@ let timer = (function () {
     return new Timer();
 })();
 
+// Update UI when timer changed
 timer.onChange = function (v) {
     document.getElementById('timer').innerHTML = (Math.floor(v / 60) < 10 ? '0' : '') +
         Math.floor(v / 60) + ':' + (v % 60 < 10 ? '0' : '') + v % 60;
 };
 
-document.getElementById('start-btn').addEventListener('click', function (event) {
-    ipc.send('start-scraper');
-    timer.enable();
-});
-
-document.getElementById('stop-btn').addEventListener('click', function (event) {
-    ipc.send('stop-scraper');
-    timer.disable();
-});
-
+// Update statistic
 ipc.on('graph-statistic', (event, data) => {
     document.getElementById('node-count').innerHTML = data.node;
     document.getElementById('edge-count').innerHTML = data.edge;
@@ -64,6 +58,31 @@ ipc.on('scraper-statistic', (event, data) => {
     document.getElementById('queue-count').innerHTML = data.queue;
 });
 
+// Enable scraper
+document.getElementById('start-btn').addEventListener('click', function (event) {
+    ipc.send('start-scraper');
+    timer.enable();
+});
+
+// Disable scraper
+document.getElementById('stop-btn').addEventListener('click', function (event) {
+    ipc.send('stop-scraper');
+    timer.disable();
+});
+
+// Save data
+document.getElementById('save-btn').addEventListener('click', function (event) {
+    log.trace('save btn clicked');
+    ipc.send('save-dialog');
+});
+
+// Load data
+document.getElementById('load-btn').addEventListener('click', function (event) {
+    log.trace('load btn clicked');
+    ipc.send('open-dialog');
+});
+
+// Query all button
 document.getElementById('query-all').addEventListener('click', function (event) {
     log.trace('query all btn clicked');
     let results = ipc.sendSync('query-all');
@@ -81,15 +100,4 @@ document.getElementById('query-all').addEventListener('click', function (event) 
     document.getElementById('result-list').innerHTML = compound;
 });
 
-document.getElementById('save-btn').addEventListener('click', function (event) {
-    log.trace('save btn clicked');
-    ipc.send('save-dialog');
-});
-
-document.getElementById('load-btn').addEventListener('click', function (event) {
-    log.trace('load btn clicked');
-    ipc.send('open-dialog');
-});
-
 log.info('render thread ready');
-
