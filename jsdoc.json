@@ -17,6 +17,9 @@
         "allowUnknownTags": true,
         "dictionaries": ["jsdoc","closure"]
     },
-    "templates": {
+    "opts": {
+        "destination": "./docs/",
+        "encoding": "utf8",
+        "template": "./node_modules/minami"
     }
 }

@@ -4,9 +4,10 @@ const DEFAULT_NAME = "\x00",
       KEY_DELIM = "\x01";
 
 /**
+ * Class Graph
  * Graph class
  */
-export default class Graph {
+const Graph = class {
     /**
      * @constructs Graph
      */
@@ -22,6 +23,7 @@ export default class Graph {
     }
 
     /**
+     * @memberof Graph
      * @function count
      *
      * @desc Return count object, including number of nodes and number of edges.
@@ -33,6 +35,7 @@ export default class Graph {
     }
 
     /**
+     * @memberof Graph
      * @function setNode
      *
      * @desc Set the node in the graph. If the node has already been set, the
@@ -64,26 +67,83 @@ export default class Graph {
         return this;
     }
 
+    /**
+     * @memberof Graph
+     * @function removeNode
+     *
+     * @desc Remove node from the graph, also delete the corresponding edges.
+     *
+     * @param {string[]|string} keys The keys of nodes that need to be removed
+     *
+     * @returns {Graph}
+     */
     removeNode (keys) {
         // TODO
     }
 
-    hasNode (v) {
-        return _.has(this._node, v);
+    /**
+     * @memberof Graph
+     * @function hasNode
+     *
+     * @desc Return true if the node exists.
+     *
+     * @param {string} key The key of the node
+     *
+     * @returns {boolean}
+     */
+    hasNode (key) {
+        return _.has(this._node, key);
     }
 
+    /**
+     * @memberof Graph
+     * @function nodes
+     *
+     * @desc Return the keys of all the nodes.
+     *
+     * @returns {string[]} All the keys
+     */
     nodes () {
         return _.keys(this._node);
     }
 
+    /**
+     * @memberof Graph
+     * @function values
+     *
+     * @desc Return the values of all nodes.
+     *
+     * @returns {Object[]} All the values
+     */
     values () {
         return _.values(this._node);
     }
 
+    /**
+     * @memberof Graph
+     * @function value
+     *
+     * @desc Return value of a specific node.
+     *
+     * @param {string} key Key of a specific node
+     *
+     * @returns {Object} The value of the node
+     */
     value (key) {
         return this._node[key];
     }
 
+    /**
+     * @memberof Graph
+     * @function edgeId
+     *
+     * @desc Return key of the edge by given keys of nodes
+     *
+     * @param {string} v The key of the node
+     * @param {string} w The key of another node
+     *
+     * @returns {string} Key of the edge
+     */
     edgeId (v, w) {
         if (v > w) {
             return w + KEY_DELIM + v;
@@ -91,6 +151,18 @@ export default class Graph {
         return v + KEY_DELIM + w;
     }
 
+    /**
+     * @memberof Graph
+     * @function edgeObj
+     * 
+     * @desc Return edge object by given keys and value
+     *
+     * @param {string} v The key of the node
+     * @param {string} w The key of another node
+     * @param {Object} value The value on the edge
+     *
+     * @returns {Object} Edge object
+     */
     edgeObj (v, w, value) {
         if (v > w) {
             var tmp = v;
@@ -102,6 +174,18 @@ export default class Graph {
         };
     }
 
+    /**
+     * @memberof Graph
+     * @function setEdge
+     *
+     * @desc Set edge in the graph. Multiple edges is not allowed.
+     *
+     * @param {string} v The key of the node
+     * @param {string} w The key of another node
+     * @param {Object} value The value on the edge
+     *
+     * @return {Graph}
+     */
     setEdge (v, w, value) {
         this.setNode(v);
         this.setNode(w);
@@ -124,18 +208,57 @@ export default class Graph {
         return this;
     }
 
+    /**
+     * @memberof Graph
+     * @function removeEdge
+     *
+     * @desc Remove edge from the graph.
+     *
+     * @param {string} v The key of the node
+     * @param {string} w The key of another node
+     *
+     * @return {Graph}
+     */
     removeEdge (v, w) {
         // TODO
     }
 
+    /**
+     * @memberof Graph
+     * @function connectivity
+     *
+     * @desc Return connectivity of a node.
+     *
+     * @param {string} key The key of the node
+     *
+     * @returns {Edge[]}
+     */
     connectivity (key) {
         return this._connectivity[key]
     }
 
+    /**
+     * @memberof Graph
+     * @function connectedNode
+     *
+     * @desc Return connected nodes of a node.
+     *
+     * @param {string} key The key of the node
+     *
+     * @returns {string[]} Keys of connected nodes.
+     */
     connectedNode (key) {
         return _.keys(this._connectivity[key]);
     }
 
+    /**
+     * @memberof Graph
+     * @function data
+     *
+     * @desc Return all data stored in the graph.
+     *
+     * @returns {Object}
+     */
     data () {
         return {
             _node: this._node,
@@ -145,10 +268,25 @@ export default class Graph {
         };
     }
 
+    /**
+     * @memberof Graph
+     * @function restore
+     *
+     * @desc Restore data from outside.
+     *
+     * @param {Object} obj
+     *
+     * @returns {Graph}
+     */
     restore (obj) {
         this._node = obj._node;
         this._edge = obj._edge;
         this._connectivity = obj._connectivity;
         this._count = obj._count;
+
+        return this;
     }
-}
+};
+
+export default Graph;
+

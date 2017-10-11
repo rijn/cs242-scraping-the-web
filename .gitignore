@@ -61,4 +61,4 @@ typings/
 package-lock.json
 yarn.lock
 
-out/
+docs/

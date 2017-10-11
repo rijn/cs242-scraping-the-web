@@ -7,7 +7,17 @@ import cheerio from 'cheerio';
 import EventEmitter from 'events';
 import _ from 'lodash';
 
-class Resource extends EventEmitter {
+/**
+ * Class to hold the web resources
+ * @extends EventEmitter
+ */
+const Resource = class extends EventEmitter {
+    /**
+     * @constructs
+     *
+     * @param {string} uri
+     * @param {Object} from Reference of previous step
+     */
     constructor ({
         uri,
         from
@@ -17,6 +27,12 @@ class Resource extends EventEmitter {
         this.from = from;
     }
 
+    /**
+     * @memberof Resource
+     * @function request
+     *
+     * @desc Send request and emit the result
+     */
     request () {
         log.debug('requesting', this.uri);
         rp({
@@ -29,9 +45,34 @@ class Resource extends EventEmitter {
             log.error(e.message);
         });
     }
-}
+};
 
-export default class Scraper extends EventEmitter {
+/**
+ * Class of scraper
+ * @extends EventEmitter
+ */
+const Scraper = class Scraper extends EventEmitter {
+    /**
+     * @constructs
+     *
+     * @desc
+     * <img src='https://g.gravizo.com/svg?
+     *   digraph G {
+     *     task -> Scraper;
+     *     Scraper -> Resource;
+     *     Resource -> analyzer [label="first time"];
+     *     Resource -> resolver;
+     *     analyzer -> Resource;
+     *     analyzer -> task;
+     *   }
+     * '/>
+     *
+     * @param {Number} [concurrency=5] Number of tasks in parallel
+     * @param {Function} [analyzer] Response analyzer
+     * @param {Function} [resolver] Resource resolver
+     * @param {Function} [keyFn] Lambda function that take task as parameter
+     *   and return the key. Will use uri as default.
+     */
     constructor ({
         concurrency = 5,
         analyzer = null,
@@ -55,29 +96,37 @@ export default class Scraper extends EventEmitter {
         this.enabled = false;
     }
 
-    data () {
-        return {
-            history: this.history,
-            queue: this.queue
-        };
-    }
-
-    restore (obj) {
-        this.history = obj.history;
-        this.queue = obj.queue.map(t => new Resource(t));
-    }
-
+    /**
+     * @memberof Scraper
+     * @function enable
+     *
+     * @desc Enable the scraper.
+     */
     enable () {
         this.enabled = true;
         this.next();
         log.info('scraper enabled');
     }
 
+    /**
+     * @memberof Scraper
+     * @function disable
+     *
+     * @desc Disable the scraper.
+     */
     disable () {
         this.enabled = false;
         log.info('scraper disabled');
     }
 
+    /**
+     * @memberof Scraper
+     * @function count
+     *
+     * @desc Return count object.
+     *
+     * @returns {Object} Count object
+     */
     count () {
         return {
             working: this.working,
@@ -85,6 +134,14 @@ export default class Scraper extends EventEmitter {
         };
     }
 
+    /**
+     * @memberof Scraper
+     * @function push
+     *
+     * @desc Push task into the queue.
+     *
+     * @param {Task[]|Task} tasks The task or array of task need to be pushed
+     */
     push (tasks) {
         if (!_.isArray(tasks)) {
             tasks = [tasks];
@@ -99,6 +156,12 @@ export default class Scraper extends EventEmitter {
         });
     }
 
+    /**
+     * @memberof Scraper
+     * @function next
+     *
+     * @desc Do the next job.
+     */
     next () {
         if (!this.enabled) return;
 
@@ -117,6 +180,12 @@ export default class Scraper extends EventEmitter {
         }
     }
 
+    /**
+     * @memberof Scraper
+     * @function resolve
+     *
+     * @desc The function need to be called when Resource request finished.
+     */
     resolve ($, task) {
         this.working--;
 
@@ -125,6 +194,13 @@ export default class Scraper extends EventEmitter {
         this.next();
     }
 
+    /**
+     * @memberof Scraper
+     * @function analyze
+     *
+     * @desc The function need to be called when the task be poped out of the
+     *   queue.
+     */
     analyze ($, task) {
         if (!this.history[this.keyFn(task)] && _.isFunction(this.analyzer)) {
             log.debug('analyzing %s', this.keyFn(task));
@@ -145,8 +221,47 @@ export default class Scraper extends EventEmitter {
         }
     }
 
+    /**
+     * @memberof Scraper
+     * @function searchHistory
+     *
+     * @desc Search the whole request history and filter out the result of
+     *   specific tasks.
+     *
+     * @param {Task[]} tasks List of tasks that need to be searched
+     *
+     * @returns {Object[]} Return list of results of tasks from the analyzer
+     */
     searchHistory (tasks) {
         return _.chain(tasks).map(this.keyFn).map(key => this.history[key]).value();
     }
-}
 
+    /**
+     * @memberof Scraper
+     * @function data
+     *
+     * @desc Return all data stored in the scraper.
+     *
+     * @returns {Object}
+     */
+    data () {
+        return {
+            history: this.history,
+            queue: this.queue
+        };
+    }
+    /**
+     * @memberof Scraper
+     * @function restore
+     *
+     * @desc Restore data from outside.
+     *
+     * @param {Object} obj
+     */
+    restore (obj) {
+        this.history = obj.history;
+        this.queue = obj.queue.map(t => new Resource(t));
+    }
+};
+
+export default Scraper;
