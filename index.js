@@ -1,43 +1,50 @@
-const electron = require('electron');
-const ipc = electron.ipcMain;
-const app = electron.app;
-const dialog = electron.dialog
-const BrowserWindow = electron.BrowserWindow;
+import { colorConsole } from 'tracer';
+import { loggerConfig } from './config';
+var log = colorConsole(loggerConfig);
 
-const path = require('path');
-const url = require('url');
+import {
+    ipcMain as ipc,
+    app,
+    dialog,
+    BrowserWindow
+} from 'electron';
+
+import path from 'path';
+import url from 'url';
 
 import fs from 'fs';
 
 let mainWindow;
 
-function createWindow () {
-  mainWindow = new BrowserWindow({width: 700, height: 800})
+let createWindow = () => {
+    mainWindow = new BrowserWindow({width: 700, height: 800});
+  
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'index.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
 
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true
-  }))
-
-  mainWindow.on('closed', function () {
-    mainWindow = null
-  })
+    log.info('loading electron');
+  
+    mainWindow.on('closed', function () {
+        mainWindow = null;
+    });
 }
 
-app.on('ready', createWindow)
+app.on('ready', createWindow);
 
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
 
-app.on('activate', function () {
-  if (mainWindow === null) {
-    createWindow()
-  }
-})
+app.on('activate', () => {
+    if (mainWindow === null) {
+        createWindow();
+    }
+});
 
 import Scraper from './scraper';
 import Graph from './graph';
@@ -52,8 +59,10 @@ import {
 } from './utils';
 import { runQueries } from './query';
 
+log.info('initialize graph');
 let graph = new Graph();
 
+log.info('initialize scraper');
 let scraper = new Scraper({
     concurrency: 10,
     analyzer: function ({ $, task }) {
@@ -84,6 +93,8 @@ let scraper = new Scraper({
             .uniq()
             .map(uri => ({ uri, from: info.name }))
             .value();
+
+        log.debug('%d dependencies founded', dependencies.length);
 
         this.push(dependencies);
 
@@ -123,7 +134,14 @@ ipc.on('start-scraper', function () { scraper.enable(); });
 ipc.on('stop-scraper', function () { scraper.disable(); });
 
 ipc.on('query-all', function (event) {
-    let results = runQueries(graph);
+    var results = null;
+    try {
+        log.info('start query');
+        results = runQueries(graph);
+        log.info('finish query');
+    } catch (e) {
+        log.error('query failed', e.message);
+    }
     event.returnValue = results;
 });
 
@@ -140,8 +158,9 @@ ipc.on('open-dialog', function (event) {
                 graph.restore(o.graph);
                 mainWindow.webContents.send('scraper-statistic', scraper.count());
                 mainWindow.webContents.send('graph-statistic', graph.count());
+                log.info('data restored');
             } catch (e) {
-                console.error(e);
+                log.error(e.message);
             }
         }
     });
@@ -156,9 +175,18 @@ ipc.on('save-dialog', function (event) {
     }
     dialog.showSaveDialog(options, function (filename) {
         if (!filename) return;
-        fs.writeFileSync(filename, JSON.stringify({
-            scraper: scraper.data(),
-            graph: graph.data()
-        }));
-    })
-})
+        try {
+            fs.writeFileSync(filename, JSON.stringify({
+                scraper: scraper.data(),
+                graph: graph.data()
+            }));
+            log.info('data saved');
+        } catch (e) {
+            log.error(e.message);
+        }
+    });
+});
+
+ipc.on('log', (event, { level = 'log', message = null } = {}) => {
+    log[level](message);
+});

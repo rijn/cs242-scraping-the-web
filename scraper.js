@@ -1,3 +1,7 @@
+import { colorConsole } from 'tracer';
+import { loggerConfig } from './config';
+var log = colorConsole(loggerConfig);
+
 import rp from 'request-promise';
 import cheerio from 'cheerio';
 import EventEmitter from 'events';
@@ -14,13 +18,15 @@ class Resource extends EventEmitter {
     }
 
     request () {
+        log.debug('requesting', this.uri);
         rp({
             uri: this.uri,
             transform: (body) => cheerio.load(body)
         }).then($ => {
             this.emit('resolve', $);
-        }).catch(err => {
-            console.error(err.message);
+            log.debug('finish', this.uri);
+        }).catch(e => {
+            log.error(e.message);
         });
     }
 }
@@ -64,10 +70,12 @@ export default class Scraper extends EventEmitter {
     enable () {
         this.enabled = true;
         this.next();
+        log.info('scraper enabled');
     }
 
     disable () {
         this.enabled = false;
+        log.info('scraper disabled');
     }
 
     count () {
@@ -119,11 +127,21 @@ export default class Scraper extends EventEmitter {
 
     analyze ($, task) {
         if (!this.history[this.keyFn(task)] && _.isFunction(this.analyzer)) {
-            this.history[this.keyFn(task)] = this.analyzer.call(this, { $, task });
+            log.debug('analyzing %s', this.keyFn(task));
+            try {
+                this.history[this.keyFn(task)] = this.analyzer.call(this, { $, task });
+            } catch (e) {
+                log.warning(e.message);
+            }
         }
 
         if (this.history[this.keyFn(task)] && _.isFunction(this.resolver)) {
-            this.resolver.call(this, this.history[this.keyFn(task)]);
+            log.debug('resolving %s', this.keyFn(task));
+            try {
+                this.resolver.call(this, this.history[this.keyFn(task)]);
+            } catch (e) {
+                log.warning(e.message);
+            }
         }
     }
 

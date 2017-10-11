@@ -25,10 +25,12 @@
     "cheerio": "^1.0.0-rc.2",
     "electron": "^1.7.8",
     "lodash": "^4.17.4",
+    "log4javascript": "^1.4.15",
     "mocha": "^4.0.1",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "semantic-ui": "^2.2.13"
+    "semantic-ui": "^2.2.13",
+    "tracer": "^0.8.11"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -1,6 +1,20 @@
 const ipc = require('electron').ipcRenderer;
 const _ = require('lodash');
 
+let log = (function () {
+    let levels = ['log', 'trace', 'debug', 'info', 'warn', 'error'];
+
+    let Log = function () {};
+    
+    _.each(levels, level => {
+        Log.prototype[level] = (message) => {
+            ipc.send('log', { level, message });
+        };
+    });
+
+    return new Log();
+})();
+
 let timer = (function () {
     var Timer = function () {
         this._t = null;
@@ -11,7 +25,6 @@ let timer = (function () {
         enable: function () {
             if (this._t) return;
             this._t = setInterval(() => {
-                console.log(this);
                 this._v ++;
                 if (this.onChange) this.onChange(this._v);
             }, 1000);
@@ -52,7 +65,10 @@ ipc.on('scraper-statistic', (event, data) => {
 });
 
 document.getElementById('query-all').addEventListener('click', function (event) {
+    log.trace('query all btn clicked');
     let results = ipc.sendSync('query-all');
+
+    if (!results) return;
 
     let compound = _.chain(results).map(({ desc = '', res = '' } = {}) =>
         `<div class="item">
@@ -66,9 +82,14 @@ document.getElementById('query-all').addEventListener('click', function (event) 
 });
 
 document.getElementById('save-btn').addEventListener('click', function (event) {
+    log.trace('save btn clicked');
     ipc.send('save-dialog');
 });
 
 document.getElementById('load-btn').addEventListener('click', function (event) {
+    log.trace('load btn clicked');
     ipc.send('open-dialog');
 });
+
+log.info('render thread ready');
+
