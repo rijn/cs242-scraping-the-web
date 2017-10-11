@@ -6,7 +6,8 @@
   "scripts": {
     "start": "babel-node .",
     "test": "nyc --reporter=text mocha -r babel-register",
-    "electron": "electron -r babel-register ."
+    "electron": "electron -r babel-register .",
+    "cloc": "cloc . --exclude-dir=node_modules,semantic,coverage --exclude-lang=JSON"
   },
   "repository": {
     "type": "git",
