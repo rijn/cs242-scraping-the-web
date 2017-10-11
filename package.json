@@ -7,7 +7,8 @@
     "start": "babel-node .",
     "test": "nyc --reporter=text mocha -r babel-register",
     "electron": "electron -r babel-register .",
-    "cloc": "cloc . --exclude-dir=node_modules,semantic,coverage --exclude-lang=JSON"
+    "cloc": "cloc . --exclude-dir=node_modules,semantic,coverage --exclude-lang=JSON",
+    "jsdoc": "jsdoc -c jsdoc.json"
   },
   "repository": {
     "type": "git",
@@ -25,8 +26,8 @@
     "chai-http": "^3.0.0",
     "cheerio": "^1.0.0-rc.2",
     "electron": "^1.7.8",
+    "jsdoc": "^3.5.5",
     "lodash": "^4.17.4",
-    "log4javascript": "^1.4.15",
     "mocha": "^4.0.1",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",

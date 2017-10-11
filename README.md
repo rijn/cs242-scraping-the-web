@@ -14,3 +14,7 @@
     ```bash
     npm run test
     ```
+* Generate doc
+    ```bash
+    npm run jsdoc
+    ```

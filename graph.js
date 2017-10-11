@@ -3,7 +3,13 @@ import _ from 'lodash';
 const DEFAULT_NAME = "\x00",
       KEY_DELIM = "\x01";
 
+/**
+ * Graph class
+ */
 export default class Graph {
+    /**
+     * @constructs Graph
+     */
     constructor () {
         this._node = {};
         this._edge = {};
@@ -15,10 +21,28 @@ export default class Graph {
         };
     }
 
+    /**
+     * @function count
+     *
+     * @desc Return count object, including number of nodes and number of edges.
+     *
+     * @returns {Count}
+     */
     count () {
         return this._count;
     }
 
+    /**
+     * @function setNode
+     *
+     * @desc Set the node in the graph. If the node has already been set, the
+     *       value will be overrided.
+     *
+     * @param {string[]|string} keys The key or keys of the node(s)
+     * @param {Object} value Value of the node, could be anything.
+     *
+     * @returns {Graph}
+     */
     setNode (keys, value = null) {
         if (!_.isArray(keys)) {
             keys = [keys];
