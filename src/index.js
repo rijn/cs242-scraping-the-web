@@ -1,6 +1,9 @@
+import _ from 'lodash';
+import fs from 'fs';
+import url from 'url';
+import path from 'path';
 import { colorConsole } from 'tracer';
-import { loggerConfig } from './config';
-var log = colorConsole(loggerConfig);
+import { loggerConfig } from '../config';
 
 import {
     ipcMain as ipc,
@@ -9,50 +12,8 @@ import {
     BrowserWindow
 } from 'electron';
 
-import path from 'path';
-import url from 'url';
-
-import fs from 'fs';
-
-let mainWindow;
-
-// Create main window of election
-let createWindow = () => {
-    mainWindow = new BrowserWindow({width: 700, height: 800});
-  
-    mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'index.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
-
-    log.info('loading electron');
-  
-    mainWindow.on('closed', function () {
-        mainWindow = null;
-    });
-}
-
-// create window when prerequsite finished
-app.on('ready', createWindow);
-
-// Terminate thread when window closed
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
-
-// Create window when app be activated
-app.on('activate', () => {
-    if (mainWindow === null) {
-        createWindow();
-    }
-});
-
 import Scraper from './scraper';
-import Graph from './graph';
-import _ from 'lodash';
+import Model from './model';
 import {
     isActor, isFilm,
     isNotInnerLink, isWikiDomain, isNotFunctionalPage,
@@ -60,12 +21,16 @@ import {
     linkExtractor, informationExtractor,
     grossingValueParser, ageParser, releaseYearParser,
     sumGrossingValue
-} from './utils';
+} from './utils/parsers';
 import { runQueries } from './query';
+
+let log = colorConsole(loggerConfig);
+
+let mainWindow;
 
 // Initialize graph
 log.info('initialize graph');
-let graph = new Graph();
+let graph = Model.graph;
 
 // Initialize scraper
 log.info('initialize scraper');
@@ -77,17 +42,17 @@ let scraper = new Scraper({
         // If cheerio is not ready, exit
         if (!$) return;
         // If current resource is neither actor nor film, exit
-        if (!isActor($) && !isFilm($)) return;
+        if (!isActor($) && !isMovie($)) return;
 
         // Extrace information from infobox
         let info = informationExtractor($);
 
         // Set indicator
         if (isActor($)) info.isActor = true;
-        if (isFilm($)) info.isFilm = true;
+        if (isMovie($)) info.isMovie = true;
 
         // If it is a film, extract grossing value and released year
-        if (info.isFilm) {
+        if (info.isMovie) {
             info.grossingValue = grossingValueParser(info);
             info.releaseYear = releaseYearParser(info);
         }
@@ -120,7 +85,7 @@ let scraper = new Scraper({
     resolver: function ({ info = null, dependencies = [], from = null } = {}) {
         let addRelation = function (task) {
             if (!task || !task.info) return;
-            if (info.isActor && task.info.isFilm || info.isFilm && task.info.isActor) {
+            if (info.isActor && task.info.isMovie || info.isMovie && task.info.isActor) {
                 graph.setEdge(info.name, task.info.name, info.grossingValue || task.info.grossingValue);
             }
         };
@@ -147,6 +112,41 @@ let scraper = new Scraper({
 
 // Push initial page
 scraper.push({ uri: 'https://en.wikipedia.org/wiki/Morgan_Freeman' });
+
+
+// Create main window of election
+let createWindow = () => {
+    mainWindow = new BrowserWindow({width: 700, height: 800});
+  
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'view/index.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+
+    log.info('loading electron');
+  
+    mainWindow.on('closed', function () {
+        mainWindow = null;
+    });
+}
+
+// create window when prerequsite finished
+app.on('ready', createWindow);
+
+// Terminate thread when window closed
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+// Create window when app be activated
+app.on('activate', () => {
+    if (mainWindow === null) {
+        createWindow();
+    }
+});
 
 // Turn on or off the scraper
 ipc.on('start-scraper', function () { scraper.enable(); });
@@ -213,3 +213,102 @@ ipc.on('save-dialog', function (event) {
 ipc.on('log', (event, { level = 'log', message = null } = {}) => {
     log[level](message);
 });
+
+var plotWindow;
+
+ipc.on('open-plot', () => {
+    if (plotWindow) return;
+
+    plotWindow = new BrowserWindow({ width: 700, height: 500});
+    
+    plotWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'view/plot.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+
+    plotWindow.on('closed', function () {
+        plotWindow = null;
+    });
+});
+
+ipc.on('plot-ready', () => {
+    let actors = graph.values().filter(isActor);
+    let films = graph.values().filter(isMovie);
+
+    let yearGrossingValue = {};
+    _.each(films, film => {
+        yearGrossingValue[film.releaseYear] = (yearGrossingValue[film.releaseYear] || 0) + film.grossingValue;
+    });
+    
+    plotWindow.webContents.send('data', {
+        ageVsGrossingValue: {
+            layout: {
+                title: 'Age vs Grossing Value',
+                xaxis: {
+                    range: [ 20, 90 ],
+                    title: 'Age'
+                },
+                yaxis: {
+                    range: [ 0, 11e9 ],
+                    title: 'Grossing Value'
+                },
+            },
+            trace: {
+                x: actors.map(actor => actor.age),
+                y: actors.map(actor => actor.grossingValue),
+                mode: 'markers',
+                type: 'scatter'
+            }
+        },
+        grossingValueOfYear: {
+            layout: {
+                title: 'Total Grossing Value of Year',
+                xaxis: {
+                    title: 'Year'
+                },
+                yaxis: {
+                    title: 'Grossing Value'
+                },
+            },
+            trace: {
+                x: _.keys(yearGrossingValue),
+                y: _.values(yearGrossingValue),
+                type: 'scatter'
+            }
+        }
+    });
+});
+
+let networkWindow;
+
+ipc.on('open-network', () => {
+    if (networkWindow) return;
+
+    networkWindow = new BrowserWindow({ width: 800, height: 800});
+    
+    networkWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'view/network.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+
+    networkWindow.on('closed', function () {
+        networkWindow = null;
+    });
+});
+
+ipc.on('network-ready', () => {
+    let json = {
+        nodes: _.map(graph.values(), value => ({
+            name: value.name,
+            isActor: value.isActor,
+            age: value.age || 0,
+            grossingValue: value.grossingValue || 0
+        })),
+    	links: _.map(graph._edge, edge => ({ source: edge.v, target: edge.w }))
+    };
+    networkWindow.webContents.send('data', json);
+});
+
+

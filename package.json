@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node .",
+    "start": "babel-node src",
     "test": "nyc --reporter=text mocha -r babel-register",
-    "electron": "electron -r babel-register .",
+    "electron": "electron -r babel-register src",
     "cloc": "cloc . --exclude-dir=node_modules,semantic,coverage,out --exclude-lang=JSON",
     "jsdoc": "jsdoc -c jsdoc.json"
   },
@@ -22,10 +22,12 @@
   "homepage": "https://github.com/rijn/cs242-scraping-the-web#readme",
   "dependencies": {
     "babel-register": "^6.26.0",
+    "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "chai-http": "^3.0.0",
     "cheerio": "^1.0.0-rc.2",
     "electron": "^1.7.8",
+    "express": "^4.16.2",
     "jsdoc": "^3.5.5",
     "lodash": "^4.17.4",
     "mocha": "^4.0.1",

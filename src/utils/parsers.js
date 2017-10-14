@@ -78,7 +78,7 @@ export const isActor = ($) => $.isActor
     || _.isFunction($) && $('.role').text() === 'Actor';
 
 /**
- * @function isFilm
+ * @function isMovie
  *
  * @desc Return true if current resource is a film
  *
@@ -86,7 +86,7 @@ export const isActor = ($) => $.isActor
  *
  * @return {boolean}
  */
-export const isFilm = ($) => $.isFilm
+export const isMovie = ($) => $.isMovie
     || _.isFunction($)
         && $('table.infobox.vevent > tbody').text().indexOf('Box office') != -1;
 
@@ -144,9 +144,11 @@ export const isNumeric = s => /^-?\d+\.?\d*$/.test(s);
  * @return {Number}
  */
 export const currencyParser = (s) => {
+    if (s.indexOf('Inflation') != -1) return 0;
     let currency = s
         .replace(/\[.*\]/g, '')
         .replace(/\(.*\)/g, '')
+        .replace(/ *\([^)]*\) */g, "")
         .replace(/[\d\.]*–/g, '')
         .replace('billion', '*1000000000')
         .replace('million', '*1000000')

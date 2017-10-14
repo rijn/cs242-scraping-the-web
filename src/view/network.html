@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Network</title>
+    <!--
+       -<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+       -->
+    <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
+<style>
+body {
+    padding: 0;
+    overflow: scroll;
+}
+
+.link {
+    stroke: #aaa;
+}
+
+.node text {
+    stroke: #333;
+    display: none;
+}
+
+.node:hover text {
+    display: block;
+}
+
+.node circle{
+    stroke: #fff;
+    stroke-width: 3px;
+    fill: #555;
+}
+
+</style>
+  </head>
+  <body>
+    <script>
+      require('./network.js')
+    </script>
+  </body>
+</html>

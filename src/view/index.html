@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>CS242 Scraping the Web</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
@@ -20,7 +21,7 @@ body {
   </head>
   <body>
 
-    <div class="ui container">
+      <div class="ui container">
         <button class="ui primary button" id="start-btn">Start</button>
         <button class="ui button" id="stop-btn">Stop</button>
         <div class="right floated">
@@ -60,14 +61,15 @@ body {
 
     <div class="ui container">
         <div class="ui button" id="query-all">Query All</div>
+        <div class="ui button" id="open-plot">Plot</div>
+        <div class="ui button" id="open-network">Network</div>
         <div class="ui relaxed divided list" id="result-list">
 
         </div>
     </div>
 
     <script>
-      // You can also require other files to run in this process
-      require('./renderer.js')
+      require('./index.js')
     </script>
   </body>
 </html>

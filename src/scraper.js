@@ -1,5 +1,5 @@
 import { colorConsole } from 'tracer';
-import { loggerConfig } from './config';
+import { loggerConfig } from '../config';
 var log = colorConsole(loggerConfig);
 
 import rp from 'request-promise';
