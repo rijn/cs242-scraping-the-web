@@ -19,8 +19,8 @@ ipc.on('data', (event, d) => {
     });
 });
 
-document.querySelector('body').addEventListener('click', function(event) {
-    if (event.target.className = 'link') {
+document.querySelector('body').addEventListener('click', function (event) {
+    if (event.target.className === 'link') {
         let key = event.target.key;
         Plotly.newPlot('plot', [ data[key].trace ], data[key].layout);
     }

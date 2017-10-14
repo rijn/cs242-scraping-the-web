@@ -15,7 +15,7 @@ import {
 import Scraper from './scraper';
 import Model from './model';
 import {
-    isActor, isFilm,
+    isActor, isMovie,
     isNotInnerLink, isWikiDomain, isNotFunctionalPage,
     completeWikiDomain,
     linkExtractor, informationExtractor,
@@ -23,6 +23,8 @@ import {
     sumGrossingValue
 } from './utils/parsers';
 import { runQueries } from './query';
+
+import './server';
 
 let log = colorConsole(loggerConfig);
 
@@ -85,7 +87,7 @@ let scraper = new Scraper({
     resolver: function ({ info = null, dependencies = [], from = null } = {}) {
         let addRelation = function (task) {
             if (!task || !task.info) return;
-            if (info.isActor && task.info.isMovie || info.isMovie && task.info.isActor) {
+            if ((info.isActor && task.info.isMovie) || (info.isMovie && task.info.isActor)) {
                 graph.setEdge(info.name, task.info.name, info.grossingValue || task.info.grossingValue);
             }
         };
@@ -113,11 +115,10 @@ let scraper = new Scraper({
 // Push initial page
 scraper.push({ uri: 'https://en.wikipedia.org/wiki/Morgan_Freeman' });
 
-
 // Create main window of election
 let createWindow = () => {
     mainWindow = new BrowserWindow({width: 700, height: 800});
-  
+
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'view/index.html'),
         protocol: 'file:',
@@ -125,11 +126,11 @@ let createWindow = () => {
     }));
 
     log.info('loading electron');
-  
+
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
-}
+};
 
 // create window when prerequsite finished
 app.on('ready', createWindow);
@@ -194,7 +195,7 @@ ipc.on('save-dialog', function (event) {
         filters: [
             { name: 'JSON', extensions: ['json'] }
         ]
-    }
+    };
     dialog.showSaveDialog(options, function (filename) {
         if (!filename) return;
         try {
@@ -209,6 +210,24 @@ ipc.on('save-dialog', function (event) {
     });
 });
 
+ipc.on('load-external-json', function (event) {
+    dialog.showOpenDialog({
+        properties: ['openFile'],
+        multiSelections: false
+    }, function (files) {
+        if (files) {
+            try {
+                Model.load(JSON.parse(fs.readFileSync(files[0])));
+                console.log(graph.values().filter(value => !value));
+                mainWindow.webContents.send('graph-statistic', graph.count());
+                log.info('data restored');
+            } catch (e) {
+                log.error(e);
+            }
+        }
+    });
+});
+
 // Log agent for window thread
 ipc.on('log', (event, { level = 'log', message = null } = {}) => {
     log[level](message);
@@ -219,8 +238,8 @@ var plotWindow;
 ipc.on('open-plot', () => {
     if (plotWindow) return;
 
-    plotWindow = new BrowserWindow({ width: 700, height: 500});
-    
+    plotWindow = new BrowserWindow({ width: 700, height: 500 });
+
     plotWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'view/plot.html'),
         protocol: 'file:',
@@ -240,7 +259,7 @@ ipc.on('plot-ready', () => {
     _.each(films, film => {
         yearGrossingValue[film.releaseYear] = (yearGrossingValue[film.releaseYear] || 0) + film.grossingValue;
     });
-    
+
     plotWindow.webContents.send('data', {
         ageVsGrossingValue: {
             layout: {
@@ -252,7 +271,7 @@ ipc.on('plot-ready', () => {
                 yaxis: {
                     range: [ 0, 11e9 ],
                     title: 'Grossing Value'
-                },
+                }
             },
             trace: {
                 x: actors.map(actor => actor.age),
@@ -269,7 +288,7 @@ ipc.on('plot-ready', () => {
                 },
                 yaxis: {
                     title: 'Grossing Value'
-                },
+                }
             },
             trace: {
                 x: _.keys(yearGrossingValue),
@@ -285,8 +304,8 @@ let networkWindow;
 ipc.on('open-network', () => {
     if (networkWindow) return;
 
-    networkWindow = new BrowserWindow({ width: 800, height: 800});
-    
+    networkWindow = new BrowserWindow({ width: 800, height: 800 });
+
     networkWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'view/network.html'),
         protocol: 'file:',
@@ -306,9 +325,7 @@ ipc.on('network-ready', () => {
             age: value.age || 0,
             grossingValue: value.grossingValue || 0
         })),
-    	links: _.map(graph._edge, edge => ({ source: edge.v, target: edge.w }))
+        links: _.map(graph._edge, edge => ({ source: edge.v, target: edge.w }))
     };
     networkWindow.webContents.send('data', json);
 });
-
-

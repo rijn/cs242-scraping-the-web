@@ -1,27 +1,22 @@
 const _ = require('lodash');
 
-export default (res) => {
-    return function (obj) {
-        let err = {
-            message: 'Undefined',
-            _s: null,
-            statusCode: 400,
-            extra: {}
-        };
-        if (_.isArray(obj)) {
-            err.message = obj[0] || 'Undefined error';
-            err._s = obj[1];
-            err.statusCode = obj[2] || 400;
-            err.extra = obj[3];
-        } else {
-            err = _.assign(err, obj);
-        }
-        try {
-            err._s.connection.release();
-        } catch (e) {}
-        if (process.env.NODE_ENV === 'dev') console.log(obj);
-        res.status(err.statusCode).send(_.defaults(err.extra, {
-            'error': (err.message).toString()
+export const ServerError = class extends Error {
+    constructor (message = 'Undefined', statusCode = 500, ...params) {
+        super(...params);
+
+        Error.captureStackTrace(this, ServerError);
+
+        this.message = message;
+        this.statusCode = statusCode;
+    }
+};
+
+export const errorHandler = (res) => {
+    return function (e) {
+        console.log(e);
+        if (process.env.NODE_ENV === 'dev') console.log(e);
+        res.status(e.statusCode).send(_.defaults(e.extra, {
+            'error': (e.message).toString()
         }));
     };
 };

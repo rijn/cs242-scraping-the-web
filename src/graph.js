@@ -1,7 +1,6 @@
 import _ from 'lodash';
 
-const DEFAULT_NAME = "\x00",
-      KEY_DELIM = "\x01";
+const KEY_DELIM = '\x01';
 
 /**
  * Class Graph
@@ -32,6 +31,47 @@ const Graph = class {
      */
     count () {
         return this._count;
+    }
+
+    /**
+     * @memberof Graph
+     * @function edgeId
+     *
+     * @desc Return key of the edge by given keys of nodes
+     *
+     * @param {string} v The key of the node
+     * @param {string} w The key of another node
+     *
+     * @returns {string} Key of the edge
+     */
+    edgeId (v, w) {
+        if (v > w) {
+            return w + KEY_DELIM + v;
+        }
+        return v + KEY_DELIM + w;
+    }
+
+    /**
+     * @memberof Graph
+     * @function edgeObj
+     * 
+     * @desc Return edge object by given keys and value
+     *
+     * @param {string} v The key of the node
+     * @param {string} w The key of another node
+     * @param {Object} value The value on the edge
+     *
+     * @returns {Object} Edge object
+     */
+    edgeObj (v, w, value) {
+        if (v > w) {
+            var tmp = v;
+            v = w;
+            w = tmp;
+        }
+        return {
+            v, w, value
+        };
     }
 
     /**
@@ -78,7 +118,25 @@ const Graph = class {
      * @returns {Graph}
      */
     removeNode (keys) {
-        // TODO
+        if (!_.isArray(keys)) {
+            keys = [keys];
+        }
+
+        _.each(keys, key => {
+            if (!_.has(this._node, key)) return;
+
+            delete this._node[key];
+            _.each(this._connectivity[key], ({ v, w }) => {
+                delete this._edge[this.edgeId(v, w)];
+                if (v !== key) { delete this._connectivity[v][w]; }
+                if (w !== key) { delete this._connectivity[w][v]; }
+                this._count.edge--;
+            });
+
+            delete this._connectivity[key];
+
+            this._count.node--;
+        });
     }
 
     /**
@@ -135,47 +193,6 @@ const Graph = class {
 
     /**
      * @memberof Graph
-     * @function edgeId
-     *
-     * @desc Return key of the edge by given keys of nodes
-     *
-     * @param {string} v The key of the node
-     * @param {string} w The key of another node
-     *
-     * @returns {string} Key of the edge
-     */
-    edgeId (v, w) {
-        if (v > w) {
-            return w + KEY_DELIM + v;
-        }
-        return v + KEY_DELIM + w;
-    }
-
-    /**
-     * @memberof Graph
-     * @function edgeObj
-     * 
-     * @desc Return edge object by given keys and value
-     *
-     * @param {string} v The key of the node
-     * @param {string} w The key of another node
-     * @param {Object} value The value on the edge
-     *
-     * @returns {Object} Edge object
-     */
-    edgeObj (v, w, value) {
-        if (v > w) {
-            var tmp = v;
-            v = w;
-            w = tmp;
-        }
-        return {
-            v, w, value
-        };
-    }
-
-    /**
-     * @memberof Graph
      * @function setEdge
      *
      * @desc Set edge in the graph. Multiple edges is not allowed.
@@ -187,14 +204,10 @@ const Graph = class {
      * @return {Graph}
      */
     setEdge (v, w, value) {
-        this.setNode(v);
-        this.setNode(w);
+        if (!_.has(this._node, v)) { this.setNode(v); }
+        if (!_.has(this._node, w)) { this.setNode(w); }
 
         let e = this.edgeId.apply(this, arguments);
-
-        if (_.has(this._edge, e)) {
-            return this;
-        }
 
         let o = this.edgeObj.apply(this, arguments);
         Object.freeze(o);
@@ -234,7 +247,7 @@ const Graph = class {
      * @returns {Edge[]}
      */
     connectivity (key) {
-        return this._connectivity[key]
+        return this._connectivity[key];
     }
 
     /**
@@ -289,4 +302,3 @@ const Graph = class {
 };
 
 export default Graph;
-

@@ -21,8 +21,14 @@ app.use(function (req, res, next) {
 
 let port = process.env.PORT || 8080;
 
-const server = http.Server(app).listen(port, () => {
-    var port = server.address().port;
-    console.log('Server is listening on ' + port);
-});
+var server;
 
+module.exports = Promise.resolve().then(() => {
+    return new Promise((resolve) => {
+        server = http.createServer(app).listen(port, () => {
+            var port = server.address().port;
+            console.log('Server is listening on ' + port);
+            resolve({ server });
+        });
+    });
+});

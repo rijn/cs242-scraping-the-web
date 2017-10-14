@@ -1,22 +1,54 @@
 import _ from 'lodash';
 import Graph from './graph';
+import Promise from 'bluebird';
 import { isActor, isMovie } from './utils/parsers';
 
 const graph = new Graph();
 
-const model = {
+let model = {};
+
+model = {
     graph,
-    actor: {
-        get: (attrs) => {
-            return _.chain(graph.values())
-                .filter(isActor)
-                .filter(actor => {
-                    _.isMatch(actor, attrs);
-                });
-        }
+    get: (filter, attrs) => {
+        return Promise.resolve(_.chain(graph.values())
+            .filter(filter)
+            .filter(v => _.isMatch(v, attrs))
+            .value());
     },
-    movie: {
+    load: (objs) => {
+        _.each(objs, obj => {
+            _.each(obj, (value, key) => {
+                value.isActor = value.json_class === 'Actor';
+                value.isMovie = value.json_class === 'Movie';
+                value.grossingValue = value.total_gross || value.box_office;
+                graph.setNode(key, value);
+                _.each(value.actors || value.movies, (ck) => {
+                    graph.setEdge(key, ck);
+                });
+            });
+        });
+
+        graph.removeNode(_.chain(graph._node).map((value, key) => {
+            return !value ? key : null;
+        }).compact().value());
+
+        _.each(graph.values().filter(isMovie), movie => {
+            _.each(graph.connectedNode(movie.name), actor => {
+                graph.setEdge(movie.name, actor, movie.grossingValue);
+            });
+        });
+
+        _.each(graph.values().filter(isActor), actor => {
+        });
     }
+};
+
+model.actor = {
+    get: (attrs) => model.get(isActor, attrs)
+};
+
+model.movie = {
+    get: (attrs) => model.get(isMovie, attrs)
 };
 
 export default model;

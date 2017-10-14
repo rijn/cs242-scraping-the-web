@@ -1,9 +1,10 @@
 import _ from 'lodash';
 
+/* eslint-disable no-extend-native */
 Array.prototype.iFeelLucky = function () {
     return this[_.random(0, this.length - 1)];
-}
- 
+};
+
 /**
  * @function linkExtractor
  *
@@ -19,7 +20,7 @@ export const linkExtractor = $ => {
         links.push($(link).attr('href'));
     });
     return links;
-}
+};
 
 /**
  * @function isNotInnerLink
@@ -74,8 +75,8 @@ export const completeWikiDomain = link => 'https://en.wikipedia.org' + link;
  *
  * @return {boolean}
  */
-export const isActor = ($) => $.isActor
-    || _.isFunction($) && $('.role').text() === 'Actor';
+export const isActor = ($) => $.isActor ||
+    (_.isFunction($) && $('.role').text() === 'Actor');
 
 /**
  * @function isMovie
@@ -86,9 +87,9 @@ export const isActor = ($) => $.isActor
  *
  * @return {boolean}
  */
-export const isMovie = ($) => $.isMovie
-    || _.isFunction($)
-        && $('table.infobox.vevent > tbody').text().indexOf('Box office') != -1;
+export const isMovie = ($) => $.isMovie ||
+    (_.isFunction($) &&
+        $('table.infobox.vevent > tbody').text().indexOf('Box office') !== -1);
 
 /**
  * @function informationExtractor
@@ -101,8 +102,8 @@ export const isMovie = ($) => $.isMovie
  */
 export const informationExtractor = ($) => {
     var result = {
-        name: ($('table.infobox').first().find('tr').first().find('.fn').text()
-            || $('table.infobox').first().find('tr').first().text())
+        name: ($('table.infobox').first().find('tr').first().find('.fn').text() ||
+            $('table.infobox').first().find('tr').first().text())
             .replace(/\n/g, ''),
         img: $('table.infobox').first().find('img')
             .first().attr('src')
@@ -121,7 +122,7 @@ export const informationExtractor = ($) => {
         }
     });
     return result;
-}
+};
 
 /**
  * @function isNumeric
@@ -144,12 +145,12 @@ export const isNumeric = s => /^-?\d+\.?\d*$/.test(s);
  * @return {Number}
  */
 export const currencyParser = (s) => {
-    if (s.indexOf('Inflation') != -1) return 0;
+    if (s.indexOf('Inflation') !== -1) return 0;
     let currency = s
         .replace(/\[.*\]/g, '')
         .replace(/\(.*\)/g, '')
-        .replace(/ *\([^)]*\) */g, "")
-        .replace(/[\d\.]*–/g, '')
+        .replace(/ *\([^)]*\) */g, '')
+        .replace(/[\d.]*–/g, '')
         .replace('billion', '*1000000000')
         .replace('million', '*1000000')
         .replace(/ *\([^)]*\) */g, '')
@@ -159,17 +160,18 @@ export const currencyParser = (s) => {
     if (!isNumeric(symbol)) {
         currency = currency.split('').slice(1).join('');
     } else {
-        symbol = "$";
+        symbol = '$';
     }
     let currencyFactor = {
         '¥': 0.15,
         '£': 1.24,
         '₤': 1.24,
         '€': 1.06,
-        '$': 1,
+        '$': 1
     };
+    // eslint-disable-next-line
     return eval(currency) * (currencyFactor[symbol] ? currencyFactor[symbol] : 1);
-}
+};
 
 /**
  * @function grossingValueParser
@@ -187,7 +189,7 @@ export const grossingValueParser = (info) => {
         .map(currencyParser)
         .filter(n => !_.isNaN(n))
         .sum();
-}
+};
 
 /**
  * @function ageParser
@@ -207,7 +209,7 @@ export const ageParser = (info) => {
         .compact()
         .head()
         .value();
-}
+};
 
 /**
  * @function releaseYearParser
@@ -220,7 +222,7 @@ export const ageParser = (info) => {
  */
 export const releaseYearParser = (info) => {
     return _.get(/((19|20)\d{2})/g.exec(info['Release date']), '1');
-}
+};
 
 /**
  * @function sumGrossingValue
@@ -234,4 +236,4 @@ export const releaseYearParser = (info) => {
  */
 export const sumGrossingValue = (graph, key) => {
     return _(graph.connectivity(key)).map(({ value }) => value).sum();
-}
+};

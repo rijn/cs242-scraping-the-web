@@ -1,11 +1,12 @@
 import { colorConsole } from 'tracer';
 import { loggerConfig } from '../config';
-var log = colorConsole(loggerConfig);
 
 import rp from 'request-promise';
 import cheerio from 'cheerio';
 import EventEmitter from 'events';
 import _ from 'lodash';
+
+var log = colorConsole(loggerConfig);
 
 /**
  * Class to hold the web resources
@@ -205,7 +206,7 @@ const Scraper = class Scraper extends EventEmitter {
         if (!this.history[this.keyFn(task)] && _.isFunction(this.analyzer)) {
             log.debug('analyzing %s', this.keyFn(task));
             try {
-                this.history[this.keyFn(task)] = this.analyzer.call(this, { $, task });
+                this.history[this.keyFn(task)] = this.analyzer({ $, task });
             } catch (e) {
                 log.warning(e.message);
             }
@@ -214,7 +215,7 @@ const Scraper = class Scraper extends EventEmitter {
         if (this.history[this.keyFn(task)] && _.isFunction(this.resolver)) {
             log.debug('resolving %s', this.keyFn(task));
             try {
-                this.resolver.call(this, this.history[this.keyFn(task)]);
+                this.resolver(this.history[this.keyFn(task)]);
             } catch (e) {
                 log.warning(e.message);
             }

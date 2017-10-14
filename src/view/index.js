@@ -6,7 +6,7 @@ let log = (function () {
     let levels = ['log', 'trace', 'debug', 'info', 'warn', 'error'];
 
     let Log = function () {};
-    
+
     _.each(levels, level => {
         Log.prototype[level] = (message) => {
             ipc.send('log', { level, message });
@@ -27,7 +27,7 @@ let timer = (function () {
         enable: function () {
             if (this._t) return;
             this._t = setInterval(() => {
-                this._v ++;
+                this._v++;
                 if (this.onChange) this.onChange(this._v);
             }, 1000);
         },
@@ -92,12 +92,12 @@ document.getElementById('query-all').addEventListener('click', function (event) 
     let compound = _.chain(results).map(({ desc = '', res = '' } = {}) => {
         return `<div class="item">
             <div class="content">
-                <a class="header">${ desc }</a>
-                <div class="description" style="white-space: pre;">${ JSON.stringify(res, null, 4) }</div>
+                <a class="header">${desc}</a>
+                <div class="description" style="white-space: pre;">${JSON.stringify(res, null, 4)}</div>
             </div>
         </div>`;
     }).join('');
-    
+
     document.getElementById('result-list').innerHTML = compound;
 });
 
@@ -107,6 +107,10 @@ document.getElementById('open-plot').addEventListener('click', function (event) 
 
 document.getElementById('open-network').addEventListener('click', function (event) {
     ipc.send('open-network');
+});
+
+document.getElementById('load-external-json').addEventListener('click', function (event) {
+    ipc.send('load-external-json');
 });
 
 log.info('render thread ready');
