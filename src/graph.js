@@ -217,7 +217,6 @@ const Graph = class {
         this._connectivity[v][w] = o;
         this._edge[e] = o;
 
-
         return this;
     }
 

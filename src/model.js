@@ -15,6 +15,10 @@ model = {
             .filter(v => _.isMatch(v, attrs))
             .value());
     },
+    insert: (attrs) => {
+        graph.setNode(attrs.name, attrs);
+        return Promise.resolve();
+    },
     load: (objs) => {
         _.each(objs, obj => {
             _.each(obj, (value, key) => {
@@ -44,11 +48,13 @@ model = {
 };
 
 model.actor = {
-    get: (attrs) => model.get(isActor, attrs)
+    get: (attrs) => model.get(isActor, attrs),
+    insert: (attrs) => model.insert(_.assign(attrs, { isActor: true }))
 };
 
 model.movie = {
-    get: (attrs) => model.get(isMovie, attrs)
+    get: (attrs) => model.get(isMovie, attrs),
+    insert: (attrs) => model.insert(_.assign(attrs, { isMovie: true }))
 };
 
 export default model;
