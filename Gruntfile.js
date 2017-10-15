@@ -66,6 +66,16 @@ module.exports = function (grunt) {
             ]
         },
         connect: {
+        },
+        jsdoc : {
+            dist : {
+                src: [ 'src/**/*.js', 'README.md' ],
+                options: {
+                    destination: 'doc',
+                    encoding: 'utf8',
+                    template: './node_modules/minami'
+                }
+            }
         }
     });
 

@@ -4,10 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node src",
-    "test": "nyc --reporter=text mocha -r babel-register",
-    "electron": "electron -r babel-register src",
-    "cloc": "cloc . --exclude-dir=node_modules,semantic,coverage,out --exclude-lang=JSON",
+    "cloc": "cloc --exclude-lang=JSON --by-file --fullpath --not-match-d src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js test/server/**/*.js test/unit/*.js test/*.js",
     "jsdoc": "jsdoc -c jsdoc.json"
   },
   "repository": {
@@ -72,6 +69,7 @@
     "babel-preset-stage-2": "^6.24.1",
     "blanket": "^1.2.3",
     "grunt-babel": "^7.0.0",
+    "grunt-jsdoc": "^2.2.0",
     "isparta": "^4.0.0",
     "minami": "^1.2.3",
     "supertest": "^3.0.0"
