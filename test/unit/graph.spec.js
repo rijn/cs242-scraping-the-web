@@ -170,13 +170,16 @@ describe('Graph', () => {
         });
 
         describe('set', () => {
-            let keys = ['test1', 'test2'];
+            let keys = [ 'test1', 'test2', 'test3', 'test4' ];
             let value = 'TEST';
 
             beforeEach(() => {
                 graph.setNode(keys[0], value);
                 graph.setNode(keys[1], value);
                 graph.setEdge(keys[0], keys[1], value);
+                graph.setNode(keys[2], value);
+                graph.setNode(keys[3], value);
+                graph.setEdge(keys[2], keys[3], value);
             });
 
             it('should set two nodes', () => {
@@ -189,7 +192,10 @@ describe('Graph', () => {
             });
 
             it('should add an edge', () => {
-                graph._edge.should.have.all.keys(graph.edgeId(keys[0], keys[1]));
+                graph._edge.should.have.all.keys([
+                    graph.edgeId(keys[0], keys[1]),
+                    graph.edgeId(keys[2], keys[3])
+                ]);
             });
 
             it('edge obj should be freezed', () => {
@@ -197,12 +203,13 @@ describe('Graph', () => {
             });
 
             it('edge count should increase', () => {
-                graph.count().edge.should.be.equal(1);
+                graph.count().edge.should.be.equal(2);
             });
 
             it('set multiple edge should be override', () => {
                 graph.setEdge(keys[0], keys[1], value);
-                graph.count().edge.should.be.equal(1);
+                graph.setEdge(keys[1], keys[0], value);
+                graph.count().edge.should.be.equal(2);
             });
         });
 
@@ -258,6 +265,26 @@ describe('Graph', () => {
                 _edge: {},
                 _node: {}
             });
+        });
+    });
+
+    it('reset should clear everything', () => {
+        let keys = ['test1', 'test2'];
+        let value = 'TEST';
+        graph.setNode(keys[0], value);
+        graph.setNode(keys[1], value);
+        graph.setEdge(keys[0], keys[1], value);
+        
+        graph.reset();
+
+        graph.should.eql({
+            _connectivity: {},
+            _count: {
+                edge: 0,
+                node: 0,
+            },
+            _edge: {},
+            _node: {}
         });
     });
 });

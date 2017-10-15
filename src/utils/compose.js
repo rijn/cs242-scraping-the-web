@@ -1,15 +1,15 @@
+import _ from 'lodash';
+
 let compose = (middlewares, path) => {
-    if (!Array.isArray(middlewares)) {
+    if (!_.isArray(middlewares)) {
         throw new Error(`middlewares ${JSON.stringify(middlewares)} should be an Array of functions.`);
     };
 
-    if (middlewares.length) {
-        for (const fn of middlewares) {
-            if (typeof fn !== 'function') {
-                throw new Error(`middleware ${path} - ${JSON.stringify(fn)} should be a function, ignored.`);
-            };
+    _.each(middlewares, fn => {
+        if (!_.isFunction(fn)) {
+            throw new Error(`middleware ${path} - ${JSON.stringify(fn)} should be a function, ignored.`);
         };
-    };
+    });
 
     return (req, res, next) => {
         (function iterate (i, max) {

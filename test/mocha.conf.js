@@ -16,21 +16,32 @@ module.exports = function (grunt) {
         sharedFiles: [
             'test/server/helper/**/*.js'
         ],
-        all: { src: [
+        unit: { src: [
             'test/unit/**/*.spec.js',
+        ] },
+        server: { src: [
+            'server-helper',
             'test/server/**/*.spec.js'
         ] }
     };
 
-    var helperDir = 'test/server/helpers';
+    var serverHelperDir = 'test/server/helpers';
+    var generalHelperDir = 'test/helpers';
 
-    var helpers = fs.readdirSync(helperDir).
-        filter(file => /.js$/g.test(file))
-        .map(file => helperDir + '/' + file);
+    var serverHelpers = fs.readdirSync(serverHelperDir)
+        .filter(file => /.js$/g.test(file))
+        .map(file => serverHelperDir + '/' + file);
+    var generalHelpers = fs.readdirSync(generalHelperDir)
+        .filter(file => /.js$/g.test(file))
+        .map(file => generalHelperDir + '/' + file);
 
     _.forEach(mochaTest, test => {
         if (test.src) {
-            test.src = helpers.concat(test.src);
+            if (test.src[0] === 'server-helper') {
+                test.src.shift();
+                test.src = serverHelpers.concat(test.src);
+            }
+            test.src = generalHelpers.concat(test.src);
         }
     });
 

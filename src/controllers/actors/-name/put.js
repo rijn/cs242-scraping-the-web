@@ -8,7 +8,7 @@ export default (req, res) => {
     return Promise.resolve().then(() => {
         return isExist(Model.actor, req.params.name).then(isActorExist => {
             if (!isActorExist) {
-                throw new ServerError('Actor does not exist');
+                throw new ServerError('Actor does not exist', 400);
             }
         });
     }).then(() => {

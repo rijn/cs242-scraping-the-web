@@ -298,6 +298,13 @@ const Graph = class {
 
         return this;
     }
+
+    reset () {
+        this._node = {};
+        this._edge = {};
+        this._connectivity = {};
+        this._count = { node: 0, edge: 0 };
+    }
 };
 
 export default Graph;
