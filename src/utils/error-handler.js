@@ -13,8 +13,6 @@ export const ServerError = class extends Error {
 
 export const errorHandler = (res) => {
     return function (e) {
-        console.log(e);
-        if (process.env.NODE_ENV === 'dev') console.log(e);
         res.status(e.statusCode).send(_.defaults(e.extra, {
             'error': (e.message).toString()
         }));

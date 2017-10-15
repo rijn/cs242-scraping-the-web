@@ -218,7 +218,7 @@ ipc.on('load-external-json', function (event) {
         if (files) {
             try {
                 Model.load(JSON.parse(fs.readFileSync(files[0])));
-                console.log(graph.values().filter(value => !value));
+                graph = Model.graph;
                 mainWindow.webContents.send('graph-statistic', graph.count());
                 log.info('data restored');
             } catch (e) {
