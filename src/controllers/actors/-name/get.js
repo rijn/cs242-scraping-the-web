@@ -7,7 +7,7 @@ export default (req, res) => {
     return Promise.resolve().then(() => {
         return Model.actor.get({ name: req.params.name });
     }).then(r => {
-        if (!_.isEmpty(r)) { throw new ServerError('Actor not found', 404); }
+        if (_.isEmpty(r)) { throw new ServerError('Actor not found', 404); }
         return r[0];
     }).done(r => {
         res.status(200).send(r);
