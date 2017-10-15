@@ -12,7 +12,7 @@ export default (req, res) => {
             }
         });
     }).then(() => {
-        return Model.actor.update(req.params.name, req.body);
+        return Model.actor.delete(req.params.name);
     }).done(() => {
         res.status(200).send({ 'result': 'succeed' });
     }, errorHandler(res));

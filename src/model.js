@@ -19,6 +19,14 @@ model = {
         graph.setNode(attrs.name, attrs);
         return Promise.resolve();
     },
+    update: (key, attrs) => {
+        graph.setNode(key, _.assign(graph.value(key), attrs));
+        return Promise.resolve();
+    },
+    delete: (key) => {
+        graph.removeNode(key);
+        return Promise.resolve();
+    },
     load: (objs) => {
         _.each(objs, obj => {
             _.each(obj, (value, key) => {
@@ -49,12 +57,16 @@ model = {
 
 model.actor = {
     get: (attrs) => model.get(isActor, attrs),
-    insert: (attrs) => model.insert(_.assign(attrs, { isActor: true }))
+    insert: (attrs) => model.insert(_.assign(attrs, { isActor: true })),
+    update: model.update,
+    delete: model.delete
 };
 
 model.movie = {
     get: (attrs) => model.get(isMovie, attrs),
-    insert: (attrs) => model.insert(_.assign(attrs, { isMovie: true }))
+    insert: (attrs) => model.insert(_.assign(attrs, { isMovie: true })),
+    update: model.update,
+    delete: model.delete
 };
 
 export default model;
