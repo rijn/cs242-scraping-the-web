@@ -253,11 +253,11 @@ ipc.on('open-plot', () => {
 
 ipc.on('plot-ready', () => {
     let actors = graph.values().filter(isActor);
-    let films = graph.values().filter(isMovie);
+    let movies = graph.values().filter(isMovie);
 
     let yearGrossingValue = {};
-    _.each(films, film => {
-        yearGrossingValue[film.releaseYear] = (yearGrossingValue[film.releaseYear] || 0) + film.grossingValue;
+    _.each(movies, movie => {
+        yearGrossingValue[movie.releaseYear] = (yearGrossingValue[movie.releaseYear] || 0) + Number(movie.grossingValue);
     });
 
     plotWindow.webContents.send('data', {
@@ -284,6 +284,7 @@ ipc.on('plot-ready', () => {
             layout: {
                 title: 'Total Grossing Value of Year',
                 xaxis: {
+                    range: [ 1900, 2020 ],
                     title: 'Year'
                 },
                 yaxis: {
