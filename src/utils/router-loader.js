@@ -7,7 +7,16 @@ import compose from './compose';
 
 const METHOD_ENUM = ['get', 'post', 'put', 'delete'];
 
-function loadRouter (app, root, options) {
+/**
+ * @function loadRouter
+ *
+ * @desc Load all controllers in the directory.
+ *
+ * @param {Application} app
+ * @param {string} root
+ * @param {Object} options
+ */
+const loadRouter = (app, root, options) => {
     const opt = options || {};
 
     glob.sync(`${root}/**/*.js`).forEach((file) => {

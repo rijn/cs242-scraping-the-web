@@ -299,11 +299,21 @@ const Graph = class {
         return this;
     }
 
+    /**
+     * @memberof Graph
+     * @function reset
+     *
+     * @desc Reset everything.
+     *
+     * @returns {Graph}
+     */
     reset () {
         this._node = {};
         this._edge = {};
         this._connectivity = {};
         this._count = { node: 0, edge: 0 };
+
+        return this;
     }
 };
 

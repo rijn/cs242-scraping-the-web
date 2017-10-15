@@ -8,23 +8,26 @@ import { isNumeric } from './utils/parsers';
 
 const app = express();
 
+// Loda json body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Parse potentoal number
 app.use((req, res, next) => {
     _.each(req.query, (value, key) => {
         if (isNumeric(value)) {
             req.query[key] = Number(value);
         }
     });
-
     next();
 });
 
+// Load controllers
 routerLoader(app, path.join(__dirname, 'controllers'), {
     excludeRules: /get|post|put|delete/gi
 });
 
+// Response 404 if no route matched
 app.use((req, res, next) => {
     res.status(404).send({
         'error': 'Undefined API'

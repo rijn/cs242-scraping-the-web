@@ -71,7 +71,6 @@
     "babel-preset-stage-2": "^6.24.1",
     "blanket": "^1.2.3",
     "grunt-babel": "^7.0.0",
-    "grunt-jsdoc": "^2.2.0",
     "grunt-sloc": "^0.7.1",
     "isparta": "^4.0.0",
     "minami": "^1.2.3",

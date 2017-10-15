@@ -3,28 +3,91 @@ import Graph from './graph';
 import Promise from 'bluebird';
 import { isActor, isMovie } from './utils/parsers';
 
+/**
+ * @class Model
+ */
 let model = {};
 
 model = {
+    /**
+     * @memberof Model
+     * @member {Graph} graph
+     */
     graph: new Graph(),
+
+    /**
+     * @memberof Model
+     * @function get
+     *
+     * @desc Get values from model.
+     *
+     * @param {Function} filter
+     * @param {Object} attrs
+     *
+     * @returns {Promise}
+     */
     get: (filter, attrs) => {
         return Promise.resolve(_.chain(model.graph.values())
             .filter(filter)
             .filter(v => _.isMatch(v, attrs))
             .value());
     },
+
+    /**
+     * @memberof Model
+     * @function insert
+     *
+     * @desc Insert value to model.
+     *
+     * @param {string} key
+     * @param {Object} attrs
+     *
+     * @returns {Promise}
+     */
     insert: (key, attrs) => {
         model.graph.setNode(key, attrs);
         return Promise.resolve();
     },
+
+    /**
+     * @memberof Model
+     * @function update
+     *
+     * @desc Update value of model.
+     *
+     * @param {string} key
+     * @param {Object} attrs
+     *
+     * @returns {Promise}
+     */
     update: (key, attrs) => {
         model.graph.setNode(key, _.assign(model.graph.value(key), attrs));
         return Promise.resolve();
     },
+
+    /**
+     * @memberof Model
+     * @function delete
+     *
+     * @desc Delete value in model.
+     *
+     * @param {string} key
+     *
+     * @returns {Promise}
+     */
     delete: (key) => {
         model.graph.removeNode(key);
         return Promise.resolve();
     },
+    
+    /**
+     * @memberof Model
+     * @function load
+     *
+     * @desc Load external json object
+     *
+     * @param {Object} obj
+     */
     load: (objs) => {
         model.graph = new Graph();
 

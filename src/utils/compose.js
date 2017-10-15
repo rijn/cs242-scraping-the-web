@@ -1,5 +1,15 @@
 import _ from 'lodash';
 
+/**
+ * @function compose
+ *
+ * @desc Compose middlewares into one
+ *
+ * @param {Function[]} middlewares
+ * @param {string} path
+ *
+ * @return {Function} Composed middleware
+ */
 let compose = (middlewares, path) => {
     if (!_.isArray(middlewares)) {
         throw new Error(`middlewares ${JSON.stringify(middlewares)} should be an Array of functions.`);
