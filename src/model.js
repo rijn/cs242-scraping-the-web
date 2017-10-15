@@ -96,7 +96,9 @@ model = {
                 value.isActor = value.json_class === 'Actor';
                 value.isMovie = value.json_class === 'Movie';
                 value.grossingValue = value.total_gross || value.box_office;
-                value.releaseYear = value.year;
+                if (value.isMovie) {
+                    value.releaseYear = value.year;
+                }
                 model.graph.setNode(key, value);
                 _.each(value.actors || value.movies, (ck) => {
                     model.graph.setEdge(key, ck);
