@@ -1,6 +1,9 @@
 /* jslint no-unuse-var: "off" */
 
-import Model from '../../../src/model';
+var requireHelper = require('../../require-helper');
+
+let Model = requireHelper('./model').default;
+
 import fs from 'fs';
 
 global.request = require('supertest');
@@ -15,7 +18,7 @@ Model.load(JSON.parse(fs.readFileSync('test/data.json')));
 // initialize model
 
 before(done => {
-    require('../../../src/server')
+    requireHelper('./server')
         .then(({ server }) => {
             _server = server;
             _model = Model;

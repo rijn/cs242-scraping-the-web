@@ -8,10 +8,14 @@
 var serveStatic = require('serve-static');
 var args = process.argv.slice(2);
 
+var path = require('path');
+
 module.exports = function (grunt) {
     require('load-grunt-tasks')(grunt);
 
     require('time-grunt')(grunt);
+
+    grunt.loadNpmTasks('grunt-istanbul');
 
     var lrPort = 35729;
     var lrSnippet = require('connect-livereload')({ port: lrPort });
@@ -23,6 +27,11 @@ module.exports = function (grunt) {
     };
 
     grunt.initConfig({
+        env: {
+            coverage: {
+                APP_DIR_FOR_CODE_COVERAGE: path.join(__dirname, './test/coverage/instrument/src/')
+            }
+        },
         shell: {
             electron: {
                 command: 'electron -r babel-register src'
@@ -45,7 +54,7 @@ module.exports = function (grunt) {
             },
             dev: {
                 options: {
-                    script: './src/bootstrap.js',
+                    script: './bootstrap.js',
                     port: 8080,
                     args: []
                 }

@@ -1,4 +1,6 @@
-import Graph from '../graph';
+var requireHelper = require('../require-helper');
+let Graph = requireHelper('./graph').default;
+
 import assert from 'assert';
 import chai from 'chai';
 import _ from 'lodash';
@@ -198,7 +200,7 @@ describe('Graph', () => {
                 graph.count().edge.should.be.equal(1);
             });
 
-            it('set multiple edge should be ignored', () => {
+            it('set multiple edge should be override', () => {
                 graph.setEdge(keys[0], keys[1], value);
                 graph.count().edge.should.be.equal(1);
             });

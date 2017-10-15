@@ -16,11 +16,10 @@ module.exports = function (grunt) {
         sharedFiles: [
             'test/server/helper/**/*.js'
         ],
-        all: {
-            src: [
-                'test/server/**/*.spec.js'
-            ]
-        }
+        all: { src: [
+            'test/unit/**/*.spec.js',
+            'test/server/**/*.spec.js'
+        ] }
     };
 
     var helperDir = 'test/server/helpers';
@@ -35,7 +34,41 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.config.merge({ mochaTest: mochaTest });
+    var isparta = require('isparta');
+
+    grunt.config.merge({
+        instrument: {
+            files: 'src/**/*.js',
+            options: {
+                lazy: true,
+                basePath: 'test/coverage/instrument/',
+                babel: { ignore: false },
+                instrumenter: isparta.Instrumenter
+            }
+        },
+        mochaTest,
+        storeCoverage: {
+            options: {
+                dir: 'test/coverage/reports'
+            }
+        },
+        makeReport: {
+            src: 'test/coverage/reports/**/*.json',
+            options: {
+                type: 'lcov',
+                dir: 'test/coverage/reports',
+                print: 'detail'
+            }
+        }
+    });
 
     grunt.registerTask('mocha', [ 'mochaTest' ]);
+
+    grunt.registerTask('coverage', [
+        'env:coverage',
+        'instrument',
+        'mochaTest',
+        'storeCoverage',
+        'makeReport'
+    ]);
 };

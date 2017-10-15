@@ -208,6 +208,7 @@ const Graph = class {
         if (!_.has(this._node, w)) { this.setNode(w); }
 
         let e = this.edgeId.apply(this, arguments);
+        if (!_.has(this._edge, e)) { this._count.edge++; }
 
         let o = this.edgeObj.apply(this, arguments);
         Object.freeze(o);
@@ -216,7 +217,6 @@ const Graph = class {
         this._connectivity[v][w] = o;
         this._edge[e] = o;
 
-        this._count.edge++;
 
         return this;
     }

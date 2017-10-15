@@ -67,7 +67,12 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
+    "babel-preset-latest": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
+    "blanket": "^1.2.3",
+    "grunt-babel": "^7.0.0",
+    "isparta": "^4.0.0",
     "minami": "^1.2.3",
     "supertest": "^3.0.0"
   }

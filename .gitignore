@@ -62,3 +62,7 @@ package-lock.json
 yarn.lock
 
 docs/
+
+coverage.html
+
+test/coverage/
