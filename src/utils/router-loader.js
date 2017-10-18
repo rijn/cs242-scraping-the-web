@@ -84,6 +84,6 @@ const loadRouter = (app, root, options) => {
             }
         });
     });
-}
+};
 
 export default loadRouter;

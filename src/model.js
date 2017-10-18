@@ -26,10 +26,24 @@ model = {
      *
      * @returns {Promise}
      */
-    get: (filter, attrs) => {
+    get: (filter, attrs, accumulator = (i, v) => i && v, initial = true) => {
+        let exact = {};
+        let reg = {};
+        _.each(attrs, (value, key) => {
+            if (_.isRegExp(value)) {
+                reg[key] = value;
+            } else {
+                exact[key] = value;
+            }
+        });
         return Promise.resolve(_.chain(model.graph.values())
             .filter(filter)
-            .filter(v => _.isMatch(v, attrs))
+            .filter(v => {
+                return _.reduce(_.concat(
+                    _.map(_.cloneDeep(reg), (r, k) => r.test(v[k])),
+                    _.map(_.cloneDeep(exact), (r, k) => r === v[k])
+                ), accumulator, initial);
+            })
             .value());
     },
 
@@ -79,7 +93,7 @@ model = {
         model.graph.removeNode(key);
         return Promise.resolve();
     },
-    
+
     /**
      * @memberof Model
      * @function load
@@ -122,14 +136,14 @@ model = {
 };
 
 model.actor = {
-    get: (attrs) => model.get(isActor, attrs),
+    get: (attrs, accumulator, initial) => model.get(isActor, attrs, accumulator, initial),
     insert: (attrs) => model.insert(attrs.name, _.assign(attrs, { isActor: true })),
     update: model.update,
     delete: model.delete
 };
 
 model.movie = {
-    get: (attrs) => model.get(isMovie, attrs),
+    get: (attrs, accumulator, initial) => model.get(isMovie, attrs, accumulator, initial),
     insert: (attrs) => model.insert(attrs.name, _.assign(attrs, { isMovie: true })),
     update: model.update,
     delete: model.delete

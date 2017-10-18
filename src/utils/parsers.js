@@ -237,3 +237,17 @@ export const releaseYearParser = (info) => {
 export const sumGrossingValue = (graph, key) => {
     return _(graph.connectivity(key)).map(({ value }) => value).sum();
 };
+
+export const orQueryParser = (_query) => {
+    let query = {};
+    _.each(_query.split('|'), q => {
+        query[q.split('=')[0]] = q.split('=')[1];
+    });
+    _.each(query, (value, key) => {
+        if (isNumeric(value)) {
+            query[key] = Number(value);
+        }
+    });
+
+    return query;
+};
