@@ -46,6 +46,7 @@
     "grunt-env": "^0.4.4",
     "grunt-eslint": "^20.0.0",
     "grunt-express-server": "^0.5.3",
+    "grunt-istanbul": "^0.8.0",
     "grunt-keepalive": "^1.0.0",
     "grunt-mocha": "^1.0.4",
     "grunt-mocha-test": "^0.13.2",
@@ -58,7 +59,6 @@
     "mocha": "^4.0.1",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "semantic-ui": "^2.2.13",
     "sinon-chai": "^2.14.0",
     "time-grunt": "^1.4.0",
     "tracer": "^0.8.11"

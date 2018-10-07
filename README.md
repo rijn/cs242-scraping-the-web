@@ -8,7 +8,7 @@
 
 * Run
     ```bash
-    npm run electron
+    grunt electron
     ```
 * Unit test
     ```bash

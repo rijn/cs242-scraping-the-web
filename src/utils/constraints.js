@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 /**
  * @function isExist
- * 
+ *
  * @desc Test if current key exist in the model
  *
  * @param {Model} model

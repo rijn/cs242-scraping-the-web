@@ -97,7 +97,7 @@ export const isMovie = ($) => $.isMovie ||
  * @desc Extract information from the info box
  *
  * @param {Cheerio} $
- * 
+ *
  * @return {Object} All information from the first info box
  */
 export const informationExtractor = ($) => {

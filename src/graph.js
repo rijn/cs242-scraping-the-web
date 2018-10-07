@@ -54,7 +54,7 @@ const Graph = class {
     /**
      * @memberof Graph
      * @function edgeObj
-     * 
+     *
      * @desc Return edge object by given keys and value
      *
      * @param {string} v The key of the node
